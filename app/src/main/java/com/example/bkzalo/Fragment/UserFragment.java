@@ -1,5 +1,6 @@
 package com.example.bkzalo.Fragment;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,14 +10,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.example.bkzalo.Adapter.UserAdapter;
+import com.example.bkzalo.MainActivity;
 import com.example.bkzalo.Model.User;
 import com.example.bkzalo.R;
+import com.example.bkzalo.WebService.WebService;
 
 //import com.google.firebase.auth.FirebaseAuth;
 //import com.google.firebase.auth.FirebaseUser;
@@ -27,8 +31,13 @@ import com.example.bkzalo.R;
 //import com.google.firebase.database.Query;
 //import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class UserFragment extends Fragment {
 
@@ -51,6 +60,7 @@ public class UserFragment extends Fragment {
         mUsers = new ArrayList<>();
 
         readUsers();
+        Log.e("myApp", "ham ReadUser da xong");
 
         search_users = view.findViewById(R.id.search_users);
         search_users.addTextChangedListener(new TextWatcher() {
@@ -73,21 +83,33 @@ public class UserFragment extends Fragment {
         return view;
     }
 
+    // hàm đọc tất cả các user từ CSDL
     private void readUsers() {
-//        final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-//        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-
         // current user
-        User user; // = getCurrentUser(id Device);
+        User current_user = MainActivity.current_user;
+        AsyncTask getAllUserTask = new GetAllUserTask().execute();
+        try {
+            mUsers = (ArrayList<User>)getAllUserTask.get();
+            for(int i=0; i<mUsers.size(); i++){
+                if (mUsers.get(i).getID() == current_user.getID()){
+                    mUsers.remove(i);
+                }
+            }
+            Log.e("Name:", mUsers.size()+"");
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
 
         //********* kiểm tra bảng user có user nào mới **********
 //        // add user vào mUser ngoại trừ current user
-//        if (!user.getId().equals(firebaseUser.getUid())) {
-//            mUsers.add(user);
-//        }
+
 //        // hiển thị users
-//        userAdapter = new UserAdapter(getContext(), mUsers, false);
-//        recyclerView.setAdapter(userAdapter);
+        userAdapter = new UserAdapter(getContext(), mUsers, false);
+        recyclerView.setAdapter(userAdapter);
         //*******************************************************
     }
 
@@ -95,5 +117,29 @@ public class UserFragment extends Fragment {
         //  search user
         // sử dụng onTextChange
         // gõ vào và lập tức hiển thị danh sách user tương ứng
+    }
+
+    class GetAllUserTask extends AsyncTask<Void, Integer, ArrayList<User>> {
+        @Override
+        protected ArrayList<User> doInBackground(Void... voids) {
+            ArrayList<User> listUser = new ArrayList<User>();
+            String jsonStr = WebService.getInstance().PostDataGetAllUser();
+            try {
+                JSONArray jsonArray = new JSONArray(jsonStr);
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    User user = WebService.getInstance().parserUser(jsonObject);
+                    listUser.add(user);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return listUser;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<User> listUser) {
+            super.onPostExecute(listUser);
+        }
     }
 }

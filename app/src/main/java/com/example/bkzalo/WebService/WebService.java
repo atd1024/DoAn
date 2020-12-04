@@ -40,23 +40,109 @@ public class WebService {
     }
 
     // gửi data sang cho server xử lý và nhận lại hồi đáp
-    public String PostData(String[] values) {
+    public String PostDataLogin(String[] values) {
         String jsonString="";
         try
         {
 
             HttpClient httpClient=new DefaultHttpClient();
-            HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/CheckLoginServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("username", values[0]));
             list.add(new BasicNameValuePair("password",values[1]));
             httpPost.setEntity(new UrlEncodedFormEntity(list));
             HttpResponse httpResponse =  httpClient.execute(httpPost);
-            Log.e("myApp", "ham PostData da xong");
             HttpEntity httpEntity=httpResponse.getEntity();
             jsonString = readResponse(httpResponse);
 
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String PostDataRegister(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/RegisterServlet");
+
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("username", values[0]));
+            list.add(new BasicNameValuePair("password",values[1]));
+            list.add(new BasicNameValuePair("displayname",values[2]));
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String PostDataGetAllUser() {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getAllUserServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+//            list.add(new BasicNameValuePair("username", values[0]));
+//            list.add(new BasicNameValuePair("password",values[1]));
+//            list.add(new BasicNameValuePair("displayname",values[2]));
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String PostDataGetUserByID(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getUserByIDServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("idUser", values[0]));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
         }
         catch(Exception exception)  {
             exception.getCause();
@@ -90,9 +176,24 @@ public class WebService {
 
     // hàm chuyển từ json string về object User
     public User parserUser(String jsonString) throws JSONException {
+
         User user;
 
         JSONObject jsonObject = new JSONObject(jsonString);
+
+        String password = jsonObject.getString("password");
+        String username = jsonObject.getString("username");
+        int ID = jsonObject.getInt("ID");
+        String displayname = jsonObject.getString("displayname");
+
+        user = new User(ID,username,password,displayname);
+        return user;
+    }
+
+    // hàm chuyển từ json Object về object User
+    public User parserUser(JSONObject jsonObject) throws JSONException {
+
+        User user;
 
         String password = jsonObject.getString("password");
         String username = jsonObject.getString("username");

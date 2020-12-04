@@ -22,6 +22,7 @@ import com.bumptech.glide.Glide;
 //import com.example.bkzalo.Fragment.ProfileFragment;
 import com.example.bkzalo.Fragment.UserFragment;
 import com.example.bkzalo.Model.User;
+import com.example.bkzalo.WebService.WebService;
 import com.google.android.material.tabs.TabLayout;
 
 //import com.google.firebase.auth.FirebaseAuth;
@@ -32,8 +33,11 @@ import com.google.android.material.tabs.TabLayout;
 //import com.google.firebase.database.FirebaseDatabase;
 //import com.google.firebase.database.ValueEventListener;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -42,8 +46,7 @@ public class MainActivity extends AppCompatActivity {
     CircleImageView profile_image;
     TextView username;
 
-//    FirebaseUser firebaseUser;
-    User current_user;
+    public static User current_user;
 //    DatabaseReference reference;
 
     @Override
@@ -59,15 +62,15 @@ public class MainActivity extends AppCompatActivity {
         profile_image = findViewById(R.id.profile_image);
         username = findViewById(R.id.username);
 
-//        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        current_user = new User();  // = getCurrentUser(id Device);
+        int currentUserID = getIntent().getIntExtra("currentUserID",0);
+        current_user = getUserByID(currentUserID);
 
- //       reference = FirebaseDatabase.getInstance().getReference("Users").child(firebaseUser.getUid());
+        profile_image.setImageResource(R.mipmap.ic_launcher);
 
         // ***** khi có thay đổi của bảng User (đổi avatar) *****
 
 //        User user = getUserByID();
-//        username.setText(user.getUsername()); // display the user's name
+        username.setText(current_user.getDisplayname()); // display the user's name
 //        if (user.getImageURL().equals("default")){
 //            profile_image.setImageResource(R.mipmap.ic_launcher);
 //        } else {
@@ -154,6 +157,24 @@ public class MainActivity extends AppCompatActivity {
         //reference.updateChildren(hashMap);
     }
 
+    private User getUserByID(int idUser){
+        AsyncTask getUserByID = new GetUserByIDTask().execute(idUser+"");
+        try {
+            User user =(User)getUserByID.get();
+            if (user != null) {
+                return user;
+            } else {
+                return null;
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     @Override
     protected void onResume() {     // when this activity is running
         super.onResume();
@@ -166,6 +187,24 @@ public class MainActivity extends AppCompatActivity {
         setStatus("offline");       // when this activity is stopped
     }
 
+    class GetUserByIDTask extends AsyncTask<String, Integer, User> {
+        @Override
+        protected User doInBackground(String... params) {
+            User user = null;
+            try {
+                String jsonStr = WebService.getInstance().PostDataGetUserByID(params);
+                user = WebService.getInstance().parserUser(jsonStr);
+                return user;
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
 
+        @Override
+        protected void onPostExecute(User user) {
+            super.onPostExecute(user);
+        }
+    }
 }
 

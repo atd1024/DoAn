@@ -42,7 +42,10 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         final User user = mUsers.get(position);
-        holder.username.setText(user.getUsername());
+        holder.displayname.setText(user.getDisplayname());
+
+        holder.profile_image.setImageResource(R.mipmap.ic_launcher);
+
         // load ảnh avatar
 //        if(user.getImageURL().equals("default")){
 //            holder.profile_image.setImageResource(R.mipmap.ic_launcher);
@@ -84,7 +87,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
     public class ViewHolder extends RecyclerView.ViewHolder{
 
         //fields
-        public TextView username;
+        public TextView displayname;
         public ImageView profile_image;
         public ImageView img_online;
         public ImageView img_offline;
@@ -92,7 +95,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            username = itemView.findViewById(R.id.username);
+            displayname = itemView.findViewById(R.id.displayname);
             profile_image = itemView.findViewById(R.id.profile_image);
             img_online = itemView.findViewById(R.id.img_online);
             img_offline = itemView.findViewById(R.id.img_offline);

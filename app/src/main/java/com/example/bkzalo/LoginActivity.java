@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -79,8 +80,10 @@ public class LoginActivity extends AppCompatActivity {
                 if(TextUtils.isEmpty(txt_email) || TextUtils.isEmpty(txt_password)){
                     Toast.makeText(LoginActivity.this, "All fields are required!", Toast.LENGTH_SHORT).show();
                 } else {
-                    if (CheckLogin(txt_email,txt_password)) {
+                    int currentUserID = CheckLogin(txt_email,txt_password);
+                    if ( currentUserID != 0) {
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.putExtra("currentUserID", currentUserID);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                         finish();
@@ -93,31 +96,30 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
-        public boolean CheckLogin (String username, String password){
+        public int CheckLogin (String username, String password){
             AsyncTask getUserTask = new GetUserTask().execute(username, password);
             try {
-                // User user =(User)getUserTask.get();
-                if (getUserTask.get() != null) {
-                    return true;
+                User user =(User)getUserTask.get();
+                if (user != null) {
+                    return user.getID();
                 } else {
-                    return false;
+                    return 0;
                 }
             } catch (ExecutionException e) {
                 e.printStackTrace();
-                return false;
+                return 0;
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                return false;
+                return 0;
             }
         }
 
         class GetUserTask extends AsyncTask<String, Integer, User> {
             @Override
             protected User doInBackground(String... params) {
-
                 User user = null;
                 try {
-                    String jsonStr = WebService.getInstance().PostData(params);
+                    String jsonStr = WebService.getInstance().PostDataLogin(params);
                     user = WebService.getInstance().parserUser(jsonStr);
                     return user;
                 } catch (JSONException e) {
@@ -125,12 +127,11 @@ public class LoginActivity extends AppCompatActivity {
                     return null;
                 }
             }
-
+            
             @Override
             protected void onPostExecute(User user) {
                 super.onPostExecute(user);
             }
         }
-
 }
 

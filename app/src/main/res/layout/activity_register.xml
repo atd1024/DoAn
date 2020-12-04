@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/username"
-            android:inputType="textEmailAddress"
+            android:inputType="text"
             android:layout_marginTop="10dp"
             app:met_floatingLabel="normal"
             android:hint="Username"/>
@@ -37,11 +37,11 @@
         <com.rengwuxian.materialedittext.MaterialEditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/email"
-            android:inputType="textEmailAddress"
+            android:id="@+id/displayname"
+            android:inputType="text"
             android:layout_marginTop="10dp"
             app:met_floatingLabel="normal"
-            android:hint="Email"/>
+            android:hint="Your name"/>
 
         <com.rengwuxian.materialedittext.MaterialEditText
             android:layout_width="match_parent"
@@ -60,7 +60,6 @@
             android:background="@color/colorPrimaryDark"
             android:textColor="#fff"
             android:layout_marginTop="20dp"/>
-
 
     </LinearLayout>
 

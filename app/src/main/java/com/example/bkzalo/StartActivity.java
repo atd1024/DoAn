@@ -18,23 +18,6 @@ public class StartActivity extends AppCompatActivity {
 
     Button login, register;
 
-    //FirebaseUser firebaseUser;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        // current user                        //firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
-        User current_user = new User(); // = getCurrentUser(id Device);
-
-        // kiểm tra nếu có current user rồi thì vào luôn, ko cần đăng nhập lại
-//        if (current_user != null) {
-//            Intent intent = new Intent(StartActivity.this, MainActivity.class);
-//            startActivity(intent);
-//            finish();
-//        }
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

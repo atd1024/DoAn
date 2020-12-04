@@ -1,6 +1,7 @@
 package com.example.bkzalo;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.example.bkzalo.MainActivity;
+import com.example.bkzalo.Model.User;
 import com.example.bkzalo.R;
 
 //import com.google.android.gms.tasks.OnCompleteListener;
@@ -22,13 +24,17 @@ import com.example.bkzalo.R;
 //import com.google.firebase.database.DatabaseReference;
 //import com.google.firebase.database.FirebaseDatabase;
 
+import com.example.bkzalo.WebService.WebService;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
+import org.json.JSONException;
+
 import java.util.HashMap;
+import java.util.concurrent.ExecutionException;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    MaterialEditText username, email, password;
+    MaterialEditText username, displayname, password;
     Button btn_register;
 
 //    FirebaseAuth auth;
@@ -45,7 +51,7 @@ public class RegisterActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         username = findViewById(R.id.username);
-        email = findViewById(R.id.email);
+        displayname = findViewById(R.id.displayname);
         password = findViewById(R.id.password);
         btn_register = findViewById(R.id.btn_register);
 
@@ -55,23 +61,61 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String txt_username = username.getText().toString();
-                String txt_email = email.getText().toString();
+                String txt_displayname = displayname.getText().toString();
                 String txt_password = password.getText().toString();
 
                 if (TextUtils.isEmpty(txt_username) ||
-                        TextUtils.isEmpty(txt_email) ||
+                        TextUtils.isEmpty(txt_displayname) ||
                         TextUtils.isEmpty(txt_password)) {
                     Toast.makeText(RegisterActivity.this, "All fields are required!", Toast.LENGTH_SHORT).show();
                 } else if (txt_password.length() < 6) {
                     Toast.makeText(RegisterActivity.this, "Your password must be at least 6 characters.", Toast.LENGTH_SHORT).show();
                 } else {
-                    register(txt_username, txt_email, txt_password);
+                    String result = register(txt_username, txt_password, txt_displayname);
+                    switch(result){
+                        case "Username is exist!":
+                            Toast.makeText(RegisterActivity.this, "Username is exist!", Toast.LENGTH_SHORT).show();
+                            break;
+                        case "Register Error!":
+                            Toast.makeText(RegisterActivity.this, "Register Error!", Toast.LENGTH_SHORT).show();
+                            break;
+                        case "Register Sucessful!":
+                            Toast.makeText(RegisterActivity.this, "You can login now!", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(RegisterActivity.this, LoginActivity.class));
+                            break;
+                        default:
+                            Toast.makeText(RegisterActivity.this, result, Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
     }
 
-    private void register(final String username, String email, String password) {
-        // dang ky
+    private String register(final String username, String password, String displayname) {
+        AsyncTask addUserTask = new AddUserTask().execute(username, password, displayname);
+
+        try {
+            String result = addUserTask.get().toString();
+            return result;
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return "Register Error!";
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return "Register Error!";
+        }
+    }
+
+    class AddUserTask extends AsyncTask<String, Integer, String> {
+        @Override
+        protected String doInBackground(String... params) {
+            String result = WebService.getInstance().PostDataRegister(params).toString();
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+        }
     }
 }

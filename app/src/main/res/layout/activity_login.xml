@@ -29,7 +29,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/email"
-            android:inputType="textEmailAddress"
+            android:inputType="text"
             android:layout_marginTop="10dp"
             app:met_floatingLabel="normal"
             android:hint="Email"/>
