@@ -5,9 +5,12 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.AsyncDifferConfig;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -59,8 +62,11 @@ public class UserFragment extends Fragment {
 
         mUsers = new ArrayList<>();
 
-        readUsers();
-        Log.e("myApp", "ham ReadUser da xong");
+        readUserOnStart();
+
+        ReadUsers readUsers = new ReadUsers();
+        readUsers.start();
+
 
         search_users = view.findViewById(R.id.search_users);
         search_users.addTextChangedListener(new TextWatcher() {
@@ -83,8 +89,58 @@ public class UserFragment extends Fragment {
         return view;
     }
 
+    class ReadUsers extends Thread {
+        @Override
+        public void run() {
+            while(true){
+                AsyncTask getStateTask = new GetStateTask().execute();
+                try {
+                    String result = getStateTask.get().toString();
+                    // nếu có user mới được insert vào bảng user
+                    if(result.equals("true")){
+                            // get lại danh sách user mới cập nhật
+                        User current_user = MainActivity.current_user;
+                        AsyncTask getAllUserTask = new GetAllUserTask().execute();
+                        try {
+                            mUsers = (ArrayList<User>)getAllUserTask.get();
+                            for(int i=0; i<mUsers.size(); i++){
+                                if (mUsers.get(i).getID() == current_user.getID()){
+                                    mUsers.remove(i);
+                                }
+                            }
+                            // set lại state cho isNewUser là false
+                            new SetStateTask().execute();
+
+                            // update lại phần UI
+                            Handler threadHandler = new Handler(Looper.getMainLooper());
+                            threadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    userAdapter = new UserAdapter(getContext(), mUsers, false);
+                                    recyclerView.setAdapter(userAdapter);
+                                }
+                            });
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        continue;
+                    }
+
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+
     // hàm đọc tất cả các user từ CSDL
-    private void readUsers() {
+    private void readUserOnStart() {
         // current user
         User current_user = MainActivity.current_user;
         AsyncTask getAllUserTask = new GetAllUserTask().execute();
@@ -95,22 +151,15 @@ public class UserFragment extends Fragment {
                     mUsers.remove(i);
                 }
             }
-            Log.e("Name:", mUsers.size()+"");
         } catch (ExecutionException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-
-
-        //********* kiểm tra bảng user có user nào mới **********
-//        // add user vào mUser ngoại trừ current user
-
-//        // hiển thị users
+       // hiển thị users
         userAdapter = new UserAdapter(getContext(), mUsers, false);
         recyclerView.setAdapter(userAdapter);
-        //*******************************************************
     }
 
     private void searchUsers(String username) {
@@ -136,10 +185,23 @@ public class UserFragment extends Fragment {
             }
             return listUser;
         }
-
+    }
+    class GetStateTask extends AsyncTask<Void, Integer, String> {
         @Override
-        protected void onPostExecute(ArrayList<User> listUser) {
-            super.onPostExecute(listUser);
+        protected String doInBackground(Void... voids) {
+            String result = WebService.getInstance().PostDataGetUserTableState();
+            return result;
         }
     }
+
+    class SetStateTask extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String[] values = {"false"};
+            WebService.getInstance().PostDataSetUserTableState(values);
+            return null;
+        }
+    }
+
+
 }

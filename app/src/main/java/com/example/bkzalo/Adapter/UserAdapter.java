@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 //import com.example.bkzalo.ChatActivity;
+import com.example.bkzalo.ChatActivity;
 import com.example.bkzalo.Model.User;
 import com.example.bkzalo.R;
 
@@ -53,27 +54,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 //            Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
 //        }
 
-        // nếu là list chat thì hiển thị online - offline
-//        if(isChat){
-//            if(user.getStatus().equals("online")){
-//                holder.img_online.setVisibility(View.VISIBLE);
-//                holder.img_offline.setVisibility(View.GONE);
-//            } else {
-//                holder.img_offline.setVisibility(View.VISIBLE);
-//                holder.img_online.setVisibility(View.GONE);
-//            }
-//        } else {    // không phải list chat thì không hiển thị status
-//            holder.img_offline.setVisibility(View.GONE);
-//            holder.img_online.setVisibility(View.GONE);
-//        }
-
         // click vào user thì vào chat activity, truyền theo id user tương ứng
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Intent intent = new Intent(mContext, ChatActivity.class);
-//                intent.putExtra("userId", user.getId());
-//                mContext.startActivity(intent);
+                Intent intent = new Intent(mContext, ChatActivity.class);
+                intent.putExtra("userId", user.getID());
+                mContext.startActivity(intent);
             }
         });
     }

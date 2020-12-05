@@ -153,6 +153,59 @@ public class WebService {
         return jsonString;
     }
 
+    public String PostDataSetUserTableState(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/UserTableStateServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("state", values[0]));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String PostDataGetUserTableState() {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/GetUserTableStateServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
     // nhận data từ bên server trả về
     public String readResponse(HttpResponse res) {
         InputStream is=null;

@@ -8,13 +8,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-
-import com.example.bkzalo.MainActivity;
-import com.example.bkzalo.Model.User;
-import com.example.bkzalo.R;
 
 //import com.google.android.gms.tasks.OnCompleteListener;
 //import com.google.android.gms.tasks.Task;
@@ -27,9 +22,6 @@ import com.example.bkzalo.R;
 import com.example.bkzalo.WebService.WebService;
 import com.rengwuxian.materialedittext.MaterialEditText;
 
-import org.json.JSONException;
-
-import java.util.HashMap;
 import java.util.concurrent.ExecutionException;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -93,9 +85,9 @@ public class RegisterActivity extends AppCompatActivity {
 
     private String register(final String username, String password, String displayname) {
         AsyncTask addUserTask = new AddUserTask().execute(username, password, displayname);
-
         try {
             String result = addUserTask.get().toString();
+
             return result;
         } catch (ExecutionException e) {
             e.printStackTrace();
@@ -104,12 +96,13 @@ public class RegisterActivity extends AppCompatActivity {
             e.printStackTrace();
             return "Register Error!";
         }
+
     }
 
     class AddUserTask extends AsyncTask<String, Integer, String> {
         @Override
         protected String doInBackground(String... params) {
-            String result = WebService.getInstance().PostDataRegister(params).toString();
+            String result = WebService.getInstance().PostDataRegister(params);
             return result;
         }
 
@@ -118,4 +111,7 @@ public class RegisterActivity extends AppCompatActivity {
             super.onPostExecute(result);
         }
     }
+
+
+
 }
