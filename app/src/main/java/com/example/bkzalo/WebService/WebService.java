@@ -2,6 +2,7 @@ package com.example.bkzalo.WebService;
 
 import android.util.Log;
 
+import com.example.bkzalo.Model.Chat;
 import com.example.bkzalo.Model.User;
 
 import org.json.JSONException;
@@ -40,7 +41,7 @@ public class WebService {
     }
 
     // gửi data sang cho server xử lý và nhận lại hồi đáp
-    public String PostDataLogin(String[] values) {
+    public String Login(String[] values) {
         String jsonString="";
         try
         {
@@ -69,7 +70,7 @@ public class WebService {
         return jsonString;
     }
 
-    public String PostDataRegister(String[] values) {
+    public String Register(String[] values) {
         String jsonString="";
         try
         {
@@ -98,7 +99,7 @@ public class WebService {
         return jsonString;
     }
 
-    public String PostDataGetAllUser() {
+    public String GetAllUser() {
         String jsonString="";
         try
         {
@@ -126,7 +127,7 @@ public class WebService {
         return jsonString;
     }
 
-    public String PostDataGetUserByID(String[] values) {
+    public String GetUserByID(String[] values) {
         String jsonString="";
         try
         {
@@ -153,7 +154,7 @@ public class WebService {
         return jsonString;
     }
 
-    public String PostDataSetUserTableState(String[] values) {
+    public String SetUserTableState(String[] values) {
         String jsonString="";
         try
         {
@@ -180,7 +181,7 @@ public class WebService {
         return jsonString;
     }
 
-    public String PostDataGetUserTableState() {
+    public String GetUserTableState() {
         String jsonString="";
         try
         {
@@ -205,6 +206,117 @@ public class WebService {
         }
         return jsonString;
     }
+
+    public String SetChatTableState(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/ChatTableStateServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("state", values[0]));
+
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String GetChatTableState() {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/GetChatTableStateServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String SendMessage(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/SendMessageServlet");
+
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("sender", values[0]));
+            list.add(new BasicNameValuePair("receiver",values[1]));
+            list.add(new BasicNameValuePair("message",values[2]));
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
+    public String GetAllChat(String[] values) {
+        String jsonString="";
+        try
+        {
+            HttpClient httpClient=new DefaultHttpClient();
+            // ip Tuấn
+            // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
+
+            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getMessageServlet");
+
+            List<NameValuePair> list=new ArrayList<NameValuePair>();
+            list.add(new BasicNameValuePair("sender", values[0]));
+            list.add(new BasicNameValuePair("receiver",values[1]));
+//            list.add(new BasicNameValuePair("displayname",values[2]));
+            httpPost.setEntity(new UrlEncodedFormEntity(list));
+            HttpResponse httpResponse =  httpClient.execute(httpPost);
+            HttpEntity httpEntity=httpResponse.getEntity();
+            jsonString = readResponse(httpResponse);
+        }
+        catch(Exception exception)  {
+            exception.getCause();
+            exception.printStackTrace();
+            exception.toString();
+            Log.e("myApp", exception.toString());
+        }
+        return jsonString;
+    }
+
 
     // nhận data từ bên server trả về
     public String readResponse(HttpResponse res) {
@@ -255,5 +367,14 @@ public class WebService {
 
         user = new User(ID,username,password,displayname);
         return user;
+    }
+
+    // hàm chuyển từ json Object về object Chat
+    public Chat parseChat(JSONObject jsonObject) throws JSONException {
+        int sender = jsonObject.getInt("sender");
+        int receiver = jsonObject.getInt("receiver");
+        String message = jsonObject.getString("message");
+        Chat chat = new Chat(sender, receiver, message);
+        return chat;
     }
 }

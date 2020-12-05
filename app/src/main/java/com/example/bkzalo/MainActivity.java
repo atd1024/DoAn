@@ -25,14 +25,6 @@ import com.example.bkzalo.Model.User;
 import com.example.bkzalo.WebService.WebService;
 import com.google.android.material.tabs.TabLayout;
 
-//import com.google.firebase.auth.FirebaseAuth;
-//import com.google.firebase.auth.FirebaseUser;
-//import com.google.firebase.database.DataSnapshot;
-//import com.google.firebase.database.DatabaseError;
-//import com.google.firebase.database.DatabaseReference;
-//import com.google.firebase.database.FirebaseDatabase;
-//import com.google.firebase.database.ValueEventListener;
-
 import org.json.JSONException;
 
 import java.util.ArrayList;
@@ -47,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
     TextView username;
 
     public static User current_user;
-//    DatabaseReference reference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         protected User doInBackground(String... params) {
             User user = null;
             try {
-                String jsonStr = WebService.getInstance().PostDataGetUserByID(params);
+                String jsonStr = WebService.getInstance().GetUserByID(params);
                 user = WebService.getInstance().parserUser(jsonStr);
                 return user;
             } catch (JSONException e) {

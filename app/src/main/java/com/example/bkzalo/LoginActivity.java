@@ -119,7 +119,7 @@ public class LoginActivity extends AppCompatActivity {
             protected User doInBackground(String... params) {
                 User user = null;
                 try {
-                    String jsonStr = WebService.getInstance().PostDataLogin(params);
+                    String jsonStr = WebService.getInstance().Login(params);
                     user = WebService.getInstance().parserUser(jsonStr);
                     return user;
                 } catch (JSONException e) {

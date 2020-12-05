@@ -2,6 +2,7 @@ package com.example.bkzalo.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.bkzalo.ChatActivity;
+import com.example.bkzalo.MainActivity;
 import com.example.bkzalo.Model.Chat;
 import com.example.bkzalo.Model.User;
 import com.example.bkzalo.R;
@@ -48,6 +50,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         } else {
             view = LayoutInflater.from(mContext).inflate(R.layout.chat_item_left, parent, false);
         }
+
         return new MessageAdapter.ViewHolder(view);
     }
 
@@ -89,7 +92,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
     @Override
     public int getItemViewType(int position) {
-        current_user = new User();  // tạo current user
+        current_user = MainActivity.current_user;  // tạo current user
         // chat nào mà người gởi là current user thì hiển thị bên phải
         if(mChat.get(position).getSender() == current_user.getID()){
             return MES_RIGTH;

@@ -8,7 +8,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.media.Image;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -16,12 +20,20 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.bkzalo.Adapter.MessageAdapter;
+import com.example.bkzalo.Adapter.UserAdapter;
+import com.example.bkzalo.Fragment.UserFragment;
 import com.example.bkzalo.Model.Chat;
 import com.example.bkzalo.Model.User;
+import com.example.bkzalo.WebService.WebService;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -30,11 +42,11 @@ public class ChatActivity extends AppCompatActivity {
     CircleImageView profile_image;
     TextView username;
 
+    // id user mà người dùng muốn chat
     int userid;
 
     //current user
     User current_user;
-
 
     ImageButton btn_send;
     EditText text_send;
@@ -56,7 +68,7 @@ public class ChatActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener(){
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -77,127 +89,187 @@ public class ChatActivity extends AppCompatActivity {
 
         // lấy dữ liệu của user được chọn bên UserList từ intent
         intent = getIntent();
-        userid = intent.getIntExtra("userId",0);
+        userid = intent.getIntExtra("userID", 0);
+        User user = getUserByID(userid);
 
         // get current user
-        current_user = new User(); // tạo current user
+        current_user = MainActivity.current_user; // tạo current user
 
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String message = text_send.getText().toString();
-                if(!message.equals("")){
-                    sendMessage(current_user.getID(),userid,message);
+                if (!message.equals("")) {
+                    sendMessage(current_user.getID(), userid, message);
                 }
                 text_send.setText("");
             }
         });
 
-        // lấy ra đối tượng user đang chat với mình dựa vào userid từ intent
-        User user = new User(); // = getUserByID(userid);
-
-        username.setText(user.getUsername());
+        username.setText(user.getDisplayname());
 
         // set avatar
         profile_image.setImageResource(R.mipmap.ic_launcher);
 
-        ReadMessage readMessage = new ReadMessage(current_user.getID(), userid, "default");   // thread start
+        readChatOnStart();
+
+        ReadMessage readMessage = new ReadMessage(current_user.getID() + "", userid + "");   // thread start
         readMessage.start();
     }
 
 
-    private void sendMessage(int sender, int receiver, String message){
+    private void sendMessage(int sender, int receiver, String message) {
 
         // insert message vào DB và set isNewChat là true
+        AsyncTask sendMessageTask = new SendMessageTask().execute(sender + "", receiver + "", message);
 
-
-        // thêm user vào danh sách hiển thị các user chat cùng
-
-//        final DatabaseReference chatRef = FirebaseDatabase.getInstance().getReference("ChatList")
-//                .child(current_user.getUid())
-//                .child(userid);
-//
-//        chatRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                if(!dataSnapshot.exists()){
-//                    chatRef.child("id").setValue(userid);
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
+        // thêm user vào danh sách hiển thị các user chat cùng (Message Fragmemt)
     }
 
     // thread đọc tất cả tin nhắn từ DB
     class ReadMessage extends Thread {
-        int myid;
-        int userid;
-        String imageurl;
+        String current_user_id;
+        String userid;
 
-        ReadMessage(int myid, int userid, String imageurl){
-            this.myid = myid;
+        ReadMessage(String current_user_id, String userid) {
+            this.current_user_id = current_user_id;
             this.userid = userid;
-            this.imageurl = imageurl;
         }
 
         @Override
-        public void run() {     // làm 1 vòng while(true)
-            mChat = new ArrayList<>();
+        public void run() {
+            while (true) {
+                AsyncTask getStateTask = new GetStateTask().execute();
+                try {
+                    String result = getStateTask.get().toString();
+                    // nếu có chat mới được insert vào bảng chats
+                    if (result.equals("true")) {
+                        // get lại danh sách chat mới cập nhật
+                        AsyncTask getAllChatTask = new GetAllChatTask().execute(current_user_id, userid);
+                        try {
+                            mChat = (ArrayList<Chat>)getAllChatTask.get();
+                            // set lại state cho isChatUser là false
+                            new SetStateTask().execute();
 
-            // nếu isNewChat là true, thì bắt đầu các bước ở dưới
-            mChat.clear();
+                            // update lại phần UI
+                            Handler threadHandler = new Handler(Looper.getMainLooper());
+                            threadHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    messageAdapter = new MessageAdapter(ChatActivity.this, mChat, "default");
+                                    recyclerView.setAdapter(messageAdapter);
+                                }
+                            });
+                        } catch (ExecutionException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        continue;
+                    }
 
-            // duyệt hết danh sách getAllChat từ DB, kiểm tra điều kiện ở dưới
-//        if(chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
-//                chat.getReceiver().equals(userid) && chat.getSender().equals(myid)){
-//            mChat.add(chat);
-//        }
-            // hiển thị lên
-            messageAdapter = new MessageAdapter(ChatActivity.this, mChat, imageurl);
-            recyclerView.setAdapter(messageAdapter);
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
-//    // đọc tất cả tin nhắn từ DB
-//    private void readMessage(final int myid, final int userid, final String imageurl){
-//        mChat = new ArrayList<>();
-//
-//        // nếu isNewChat là true, thì bắt đầu các bước ở dưới
-//        mChat.clear();
-//
-//        // duyệt hết danh sách getAllChat từ DB, kiểm tra điều kiện ở dưới
-////        if(chat.getReceiver().equals(myid) && chat.getSender().equals(userid) ||
-////                chat.getReceiver().equals(userid) && chat.getSender().equals(myid)){
-////            mChat.add(chat);
-////        }
-//        // hiển thị lên
-//        messageAdapter = new MessageAdapter(ChatActivity.this, mChat, imageurl);
-//        recyclerView.setAdapter(messageAdapter);
-//    }
 
-//    private void setStatus(String status){
-//        reference = FirebaseDatabase.getInstance().getReference().child("Users").child(current_user.getUid());
-//
-//        HashMap<String, Object> hashMap = new HashMap<>();
-//        hashMap.put("status", status);
-//
-//        reference.updateChildren(hashMap);
-//    }
-
-    @Override
-    protected void onResume() {     // when this activity is running
-        super.onResume();
-        //setStatus("online");
+    private User getUserByID(int idUser) {
+        AsyncTask getUserByID = new GetUserByIDTask().execute(idUser + "");
+        try {
+            User user = (User) getUserByID.get();
+            if (user != null) {
+                return user;
+            } else {
+                return null;
+            }
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        //setStatus("offline");       // when this activity is paused
+    private void readChatOnStart() {
+        AsyncTask getAllChatTask = new GetAllChatTask().execute(current_user.getID()+"", userid+"");
+        try {
+            mChat = (ArrayList<Chat>)getAllChatTask.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        // hiển thị
+        messageAdapter = new MessageAdapter(ChatActivity.this, mChat, "default");
+        recyclerView.setAdapter(messageAdapter);
     }
 
-}
+        class GetUserByIDTask extends AsyncTask<String, Integer, User> {
+            @Override
+            protected User doInBackground(String... params) {
+                User user = null;
+                try {
+                    String jsonStr = WebService.getInstance().GetUserByID(params);
+                    user = WebService.getInstance().parserUser(jsonStr);
+                    return user;
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+        }
+
+        class GetAllChatTask extends AsyncTask<String, Integer, ArrayList<Chat>> {
+            @Override
+            protected ArrayList<Chat> doInBackground(String... params) {
+                ArrayList<Chat> listChat = new ArrayList<Chat>();
+                String jsonStr = WebService.getInstance().GetAllChat(params);
+                try {
+                    JSONArray jsonArray = new JSONArray(jsonStr);
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+                        Chat chat = WebService.getInstance().parseChat(jsonObject);
+
+                        listChat.add(chat);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                return listChat;
+            }
+        }
+
+        class SendMessageTask extends AsyncTask<String, Integer, Void> {
+            @Override
+            protected Void doInBackground(String... params) {
+                WebService.getInstance().SendMessage(params);
+                return null;
+            }
+        }
+
+        class GetStateTask extends AsyncTask<Void, Integer, String> {
+            @Override
+            protected String doInBackground(Void... voids) {
+                String result = WebService.getInstance().GetChatTableState();
+                return result;
+            }
+        }
+
+        class SetStateTask extends AsyncTask<Void, Integer, Void> {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                String[] values = {"false"};
+                WebService.getInstance().SetChatTableState(values);
+                return null;
+            }
+        }
+    }

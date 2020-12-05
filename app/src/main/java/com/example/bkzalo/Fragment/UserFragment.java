@@ -138,8 +138,6 @@ public class UserFragment extends Fragment {
         }
     }
 
-
-    // hàm đọc tất cả các user từ CSDL
     private void readUserOnStart() {
         // current user
         User current_user = MainActivity.current_user;
@@ -172,7 +170,7 @@ public class UserFragment extends Fragment {
         @Override
         protected ArrayList<User> doInBackground(Void... voids) {
             ArrayList<User> listUser = new ArrayList<User>();
-            String jsonStr = WebService.getInstance().PostDataGetAllUser();
+            String jsonStr = WebService.getInstance().GetAllUser();
             try {
                 JSONArray jsonArray = new JSONArray(jsonStr);
                 for (int i = 0; i < jsonArray.length(); i++) {
@@ -186,10 +184,11 @@ public class UserFragment extends Fragment {
             return listUser;
         }
     }
+
     class GetStateTask extends AsyncTask<Void, Integer, String> {
         @Override
         protected String doInBackground(Void... voids) {
-            String result = WebService.getInstance().PostDataGetUserTableState();
+            String result = WebService.getInstance().GetUserTableState();
             return result;
         }
     }
@@ -198,7 +197,7 @@ public class UserFragment extends Fragment {
         @Override
         protected Void doInBackground(Void... voids) {
             String[] values = {"false"};
-            WebService.getInstance().PostDataSetUserTableState(values);
+            WebService.getInstance().SetUserTableState(values);
             return null;
         }
     }
