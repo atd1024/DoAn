@@ -44,6 +44,7 @@ dependencies {
     // libraries for User Interface
     implementation 'de.hdodenhof:circleimageview:3.1.0' // circle image for displaying profile image
     implementation 'com.github.bumptech.glide:glide:4.11.0' // smooth loading image
+    compile 'com.squareup.picasso:picasso:2.5.2'
 
 
     testImplementation 'junit:junit:4.12'
