@@ -47,7 +47,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
 
         holder.profile_image.setImageResource(R.mipmap.ic_launcher);
 
-        // load ảnh avatar
+         //load ảnh avatar
 //        if(user.getImageURL().equals("default")){
 //            holder.profile_image.setImageResource(R.mipmap.ic_launcher);
 //        } else {

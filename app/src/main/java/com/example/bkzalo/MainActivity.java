@@ -20,6 +20,7 @@ import com.bumptech.glide.Glide;
 //import com.example.bkzalo.Fragment.ChatsFragment;
 //import com.example.bkzalo.Fragment.NewsFragment;
 //import com.example.bkzalo.Fragment.ProfileFragment;
+import com.example.bkzalo.Fragment.NewsFragment;
 import com.example.bkzalo.Fragment.UserFragment;
 import com.example.bkzalo.Model.User;
 import com.example.bkzalo.WebService.WebService;
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        //viewPagerAdapter.addFragment(new NewsFragment(), "News");
+        viewPagerAdapter.addFragment(new NewsFragment(), "News");
         //viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
         viewPagerAdapter.addFragment(new UserFragment(), "Users");
         //viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");

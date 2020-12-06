@@ -50,7 +50,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/CheckLoginServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/CheckLoginServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("username", values[0]));
@@ -78,7 +78,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/RegisterServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/RegisterServlet");
 
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
@@ -107,7 +107,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getAllUserServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/getAllUserServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
 //            list.add(new BasicNameValuePair("username", values[0]));
@@ -122,7 +122,7 @@ public class WebService {
             exception.getCause();
             exception.printStackTrace();
             exception.toString();
-            Log.e("myApp", exception.toString());
+
         }
         return jsonString;
     }
@@ -135,7 +135,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getUserByIDServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/getUserByIDServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("idUser", values[0]));
@@ -162,7 +162,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/UserTableStateServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/UserTableStateServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("state", values[0]));
@@ -189,7 +189,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/GetUserTableStateServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/GetUserTableStateServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
 
@@ -215,7 +215,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/ChatTableStateServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/ChatTableStateServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("state", values[0]));
@@ -242,7 +242,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/GetChatTableStateServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/GetChatTableStateServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
 
@@ -268,7 +268,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/SendMessageServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/SendMessageServlet");
 
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
@@ -297,7 +297,7 @@ public class WebService {
             // ip Tuấn
             // HttpPost httpPost=new HttpPost("http://192.168.1.9:8080/MVCsample/CheckLoginServlet");
 
-            HttpPost httpPost=new HttpPost("http://192.168.0.105:8080/WebService/getMessageServlet");
+            HttpPost httpPost=new HttpPost("http://192.168.0.106:8080/WebService/getMessageServlet");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
             list.add(new BasicNameValuePair("sender", values[0]));
@@ -351,7 +351,7 @@ public class WebService {
         int ID = jsonObject.getInt("ID");
         String displayname = jsonObject.getString("displayname");
 
-        user = new User(ID,username,password,displayname);
+        user = new User(ID,username,password,displayname, "offline", "default");
         return user;
     }
 
@@ -364,8 +364,11 @@ public class WebService {
         String username = jsonObject.getString("username");
         int ID = jsonObject.getInt("ID");
         String displayname = jsonObject.getString("displayname");
+        //String status = jsonObject.getString("status");
+        //String imageURL = jsonObject.getString("imageURL");
 
-        user = new User(ID,username,password,displayname);
+        user = new User(ID,username,password,displayname, "status", "imageURL");
+
         return user;
     }
 

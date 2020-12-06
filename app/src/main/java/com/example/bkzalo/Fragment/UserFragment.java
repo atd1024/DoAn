@@ -64,6 +64,7 @@ public class UserFragment extends Fragment {
 
         readUserOnStart();
 
+
         ReadUsers readUsers = new ReadUsers();
         readUsers.start();
 
@@ -175,12 +176,16 @@ public class UserFragment extends Fragment {
                 JSONArray jsonArray = new JSONArray(jsonStr);
                 for (int i = 0; i < jsonArray.length(); i++) {
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
+                    Log.e("UserFragment", jsonObject.toString());
                     User user = WebService.getInstance().parserUser(jsonObject);
+
                     listUser.add(user);
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.e("Exception", e.toString());
             }
+
             return listUser;
         }
     }
