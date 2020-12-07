@@ -104,8 +104,8 @@ public class ChatActivity extends AppCompatActivity {
         btn_send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String message = text_send.getText().toString();
-                if (!message.equals("")) {
+                String message = text_send.getText().toString().trim();
+                if ((!message.equals("")) && !message.matches("[\\n\\r]+")) {
                     sendMessage(current_user.getID(), userid, message);
                 }
                 text_send.setText("");
