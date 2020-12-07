@@ -15,7 +15,8 @@ public class User {
 
     }
 
-    public User(int ID, String username, String password, String displayname, String status, String imageURL) {
+    public User(int ID, String username, String password, String displayname,
+                String status, String imageURL) {
         this.ID = ID;
         this.username = username;
         this.displayname = displayname;

@@ -3,6 +3,9 @@ package com.example.bkzalo;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
@@ -21,6 +24,7 @@ import com.bumptech.glide.Glide;
 //import com.example.bkzalo.Fragment.NewsFragment;
 //import com.example.bkzalo.Fragment.ProfileFragment;
 import com.example.bkzalo.Fragment.NewsFragment;
+import com.example.bkzalo.Fragment.ProfileFragment;
 import com.example.bkzalo.Fragment.UserFragment;
 import com.example.bkzalo.Model.User;
 import com.example.bkzalo.WebService.WebService;
@@ -57,19 +61,15 @@ public class MainActivity extends AppCompatActivity {
         int currentUserID = getIntent().getIntExtra("currentUserID",0);
         current_user = getUserByID(currentUserID);
 
-        profile_image.setImageResource(R.mipmap.ic_launcher);
+        // load avatar
+        if (current_user.getImageURL().equals("default")){
+            profile_image.setImageResource(R.mipmap.ic_launcher);
+        } else {
+            Glide.with(getApplicationContext()).load(current_user.getImageURL()).into(profile_image);
+        }
 
-        // ***** khi có thay đổi của bảng User (đổi avatar) *****
-
-//        User user = getUserByID();
         username.setText(current_user.getDisplayname()); // display the user's name
-//        if (user.getImageURL().equals("default")){
-//            profile_image.setImageResource(R.mipmap.ic_launcher);
-//        } else {
-//            Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
-//        }
 
-        // ******************************************************
 
         TabLayout tabLayout = findViewById(R.id.tab_layout);
         ViewPager viewPager = findViewById(R.id.view_pager);
@@ -79,11 +79,15 @@ public class MainActivity extends AppCompatActivity {
         viewPagerAdapter.addFragment(new NewsFragment(), "News");
         //viewPagerAdapter.addFragment(new ChatsFragment(), "Chats");
         viewPagerAdapter.addFragment(new UserFragment(), "Users");
-        //viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
+        viewPagerAdapter.addFragment(new ProfileFragment(), "Profile");
 
         viewPager.setAdapter(viewPagerAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
+
+        // ***** khi có thay đổi của bảng User (đổi avatar) *****
+        UpdateImage updateImage = new UpdateImage();
+        updateImage.start();
     }
 
     @Override
@@ -96,8 +100,9 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case R.id.logout:
-                //FirebaseAuth.getInstance().signOut();
-                startActivity(new Intent(MainActivity.this, StartActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+//                startActivity(new Intent(MainActivity.this, StartActivity.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP));
+                startActivity(new Intent(MainActivity.this, StartActivity.class));
+                finish();
                 return true;
         }
         return false;
@@ -196,6 +201,49 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(User user) {
             super.onPostExecute(user);
+        }
+    }
+
+    class GetStateTask extends AsyncTask<Void, Integer, String> {
+        @Override
+        protected String doInBackground(Void... voids) {
+            String result = WebService.getInstance().GetUserTableState();
+            return result;
+        }
+    }
+
+    class SetStateTask extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String[] values = {"false"};
+            WebService.getInstance().SetUserTableState(values);
+            return null;
+        }
+    }
+
+    class UpdateImage extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                AsyncTask getStateTask = new GetStateTask().execute();
+                try {
+                    String result = getStateTask.get().toString();
+                    if (result.equals("true")) {
+                        // set lại user table state
+                        new SetStateTask().execute();
+                        // update lại phần UI
+                        Handler threadHandler = new Handler(Looper.getMainLooper());
+                        threadHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Glide.with(getApplicationContext()).load(current_user.getImageURL()).into(profile_image);
+                            }
+                        });
+                    }
+                } catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

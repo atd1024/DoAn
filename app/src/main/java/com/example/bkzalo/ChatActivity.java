@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.bkzalo.Adapter.MessageAdapter;
 import com.example.bkzalo.Adapter.UserAdapter;
+import com.example.bkzalo.Fragment.ProfileFragment;
 import com.example.bkzalo.Fragment.UserFragment;
 import com.example.bkzalo.Model.Chat;
 import com.example.bkzalo.Model.User;
@@ -45,8 +46,13 @@ public class ChatActivity extends AppCompatActivity {
     // id user mà người dùng muốn chat
     int userid;
 
+    // user mà người dùng muốn chat
+    User user;
+
     //current user
     User current_user;
+
+
 
     ImageButton btn_send;
     EditText text_send;
@@ -90,7 +96,7 @@ public class ChatActivity extends AppCompatActivity {
         // lấy dữ liệu của user được chọn bên UserList từ intent
         intent = getIntent();
         userid = intent.getIntExtra("userID", 0);
-        User user = getUserByID(userid);
+        user = getUserByID(userid);
 
         // get current user
         current_user = MainActivity.current_user; // tạo current user
@@ -108,13 +114,20 @@ public class ChatActivity extends AppCompatActivity {
 
         username.setText(user.getDisplayname());
 
-        // set avatar
-        profile_image.setImageResource(R.mipmap.ic_launcher);
+        // load avatar
+        if(user.getImageURL().equals("default")){
+            profile_image.setImageResource(R.mipmap.ic_launcher);
+        } else {
+            Glide.with(ChatActivity.this).load(user.getImageURL()).into(profile_image);
+        }
 
         readChatOnStart();
 
         ReadMessage readMessage = new ReadMessage(current_user.getID() + "", userid + "");   // thread start
         readMessage.start();
+
+//        UpdateImage updateImage = new UpdateImage();
+//        updateImage.start();
     }
 
 
@@ -156,7 +169,7 @@ public class ChatActivity extends AppCompatActivity {
                             threadHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    messageAdapter = new MessageAdapter(ChatActivity.this, mChat, "default");
+                                    messageAdapter = new MessageAdapter(ChatActivity.this, mChat, user.getImageURL());
                                     recyclerView.setAdapter(messageAdapter);
                                 }
                             });
@@ -172,6 +185,34 @@ public class ChatActivity extends AppCompatActivity {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    // thread bắt thay đổi avatar
+    class UpdateImage extends Thread {
+        @Override
+        public void run() {
+            while (true) {
+                AsyncTask getStateTask = new GetUserStateTask().execute();
+                try {
+                    String result = getStateTask.get().toString();
+                    if (result.equals("true")) {
+                        // set lại user table state
+                        new SetUserStateTask().execute();
+                        // update lại phần UI
+                        Handler threadHandler = new Handler(Looper.getMainLooper());
+                        threadHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                user = getUserByID(userid);
+                                Glide.with(getApplicationContext()).load(user.getImageURL()).into(profile_image);
+                            }
+                        });
+                    }
+                } catch(Exception e){
                     e.printStackTrace();
                 }
             }
@@ -208,11 +249,11 @@ public class ChatActivity extends AppCompatActivity {
         }
 
         // hiển thị
-        messageAdapter = new MessageAdapter(ChatActivity.this, mChat, "default");
+        messageAdapter = new MessageAdapter(ChatActivity.this, mChat, user.getImageURL());
         recyclerView.setAdapter(messageAdapter);
     }
 
-        class GetUserByIDTask extends AsyncTask<String, Integer, User> {
+    class GetUserByIDTask extends AsyncTask<String, Integer, User> {
             @Override
             protected User doInBackground(String... params) {
                 User user = null;
@@ -227,7 +268,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        class GetAllChatTask extends AsyncTask<String, Integer, ArrayList<Chat>> {
+    class GetAllChatTask extends AsyncTask<String, Integer, ArrayList<Chat>> {
             @Override
             protected ArrayList<Chat> doInBackground(String... params) {
                 ArrayList<Chat> listChat = new ArrayList<Chat>();
@@ -248,7 +289,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        class SendMessageTask extends AsyncTask<String, Integer, Void> {
+    class SendMessageTask extends AsyncTask<String, Integer, Void> {
             @Override
             protected Void doInBackground(String... params) {
                 WebService.getInstance().SendMessage(params);
@@ -256,7 +297,8 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        class GetStateTask extends AsyncTask<Void, Integer, String> {
+    // state CHAT
+    class GetStateTask extends AsyncTask<Void, Integer, String> {
             @Override
             protected String doInBackground(Void... voids) {
                 String result = WebService.getInstance().GetChatTableState();
@@ -264,7 +306,7 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
-        class SetStateTask extends AsyncTask<Void, Integer, Void> {
+    class SetStateTask extends AsyncTask<Void, Integer, Void> {
             @Override
             protected Void doInBackground(Void... voids) {
                 String[] values = {"false"};
@@ -272,4 +314,22 @@ public class ChatActivity extends AppCompatActivity {
                 return null;
             }
         }
+
+    // state USER
+    class GetUserStateTask extends AsyncTask<Void, Integer, String> {
+            @Override
+            protected String doInBackground(Void... voids) {
+                String result = WebService.getInstance().GetUserTableState();
+                return result;
+            }
+        }
+
+    class SetUserStateTask extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String[] values = {"false"};
+            WebService.getInstance().SetUserTableState(values);
+            return null;
+        }
+    }
     }

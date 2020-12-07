@@ -45,14 +45,13 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.ViewHolder> {
         final User user = mUsers.get(position);
         holder.displayname.setText(user.getDisplayname());
 
-        holder.profile_image.setImageResource(R.mipmap.ic_launcher);
 
          //load ảnh avatar
-//        if(user.getImageURL().equals("default")){
-//            holder.profile_image.setImageResource(R.mipmap.ic_launcher);
-//        } else {
-//            Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
-//        }
+        if(user.getImageURL().equals("default")){
+            holder.profile_image.setImageResource(R.mipmap.ic_launcher);
+        } else {
+            Glide.with(mContext).load(user.getImageURL()).into(holder.profile_image);
+        }
 
         // click vào user thì vào chat activity, truyền theo id user tương ứng
         holder.itemView.setOnClickListener(new View.OnClickListener() {
